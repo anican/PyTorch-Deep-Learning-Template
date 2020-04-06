@@ -1,126 +1,257 @@
-# Pytorch Deep Learning Template
-### A clean and simple template to kick start your next dl project 🚀🚀
-*Francesco Saverio Zuppichini*
+---
+title: "Tufte Handout"
+subtitle: "An implementation in R Markdown"
+author: "JJ Allaire and Yihui Xie"
+date: "`r Sys.Date()`"
+output:
+  tufte::tufte_html: default
+  tufte::tufte_handout:
+    citation_package: natbib
+    latex_engine: xelatex
+  tufte::tufte_book:
+    citation_package: natbib
+    latex_engine: xelatex
+bibliography: skeleton.bib
+link-citations: yes
+---
 
-In this article, we present you a deep learning template based on Pytorch. This template aims to make it easier for you to start a new deep learning computer vision project with PyTorch. The main features are:
-
-- modularity: we split each logic piece into a different python submodule
-- data-augmentation: we included [imgaug](https://imgaug.readthedocs.io/en/latest/)
-- ready to go: by using [poutyne](https://pypi.org/project/Poutyne/) a Keras-like framework you don't have to write any train loop.
-- [torchsummary](https://github.com/sksq96/pytorch-summary) to show a summary of your models
-- reduce the learning rate on a plateau
-- auto-saving the best model
-- experiment tracking with [comet](https://www.comet.ml/)
-- logging using python [logging](https://docs.python.org/3/library/logging.html) module
-- a playground notebook to quick test/play around
-## Installation
-Clone the repo and go inside it. Then, run:
-
-```
-pip install -r requirements.txt
-```
-
-### Motivation
-Let's face it, usually data scientists are not software engineers and they usually end up with spaghetti code, most of the time on a big unusable Jupiter-notebook. With this repo, I have proposed a clean example of how your code should be split and modularized to make scalability and sharability possible. In this example, we will try to classify Darth Vader and Luke Skywalker. We have 100 images per class gathered using google images. The dataset is [here](https://drive.google.com/open?id=1LyHJxUVjOgDIgGJL4MnDhA10xjejWuw7). You just have to extract it in this folder and run main.py. We are fine-tuning resnet18 and it should be able to reach > 90% accuracy in 5/10 epochs.
-## Structure
-The template is inside `./template`.
-```
-.
-├── callbacks // here you can create your custom callbacks
-├── checkpoint // were we store the trained models
-├── data // here we define our dataset
-│ └── transformation // custom transformation, e.g. resize and data augmentation
-├── dataset // the data
-│ ├── train
-│ └── val
-├── logger.py // were we define our logger
-├── losses // custom losses
-├── main.py
-├── models // here we create our models
-│ ├── MyCNN.py
-│ ├── resnet.py
-│ └── utils.py
-├── playground.ipynb // a notebook that can be used to fast experiment with things
-├── Project.py // a class that represents the project structure
-├── README.md
-├── requirements.txt
-├── test // you should always perform some basic testing
-│ └── test_myDataset.py
-└── utils.py // utilities functions
-```
-**We strongly encourage to play around with the template**
-### Keep your structure clean and concise
-Every deep learning project has at least three mains steps:
-- data gathering/processing
-- modeling
-- training/evaluating
-## Project
-One good idea is to store all the paths at an interesting location, e.g. the dataset folder, in a shared class that can be accessed by anyone in the folder. You should never hardcode any paths and always define them once and import them. So, if you later change your structure you will only have to modify one file.
-If we have a look at `Project.py` we can see how we defined the `data_dir` and the `checkpoint_dir` once for all. We are using the 'new' [Path](https://docs.python.org/3/library/pathlib.html) APIs that support different OS out of the box, and also makes it easier to join and concatenate paths.
-![alt](https://raw.githubusercontent.com/FrancescoSaverioZuppichini/PyTorch-Deep-Learning-Skeletron/master/images/Project.png)
-For example, if we want to know the data location we can :
-```python3
-from Project import Project
-project = Project() 
-print(project.data_dir) # /foo/baa/…/dataset
-```
-## Data
-In the `data` package you can define your own Dataset, as always by subclassing `torch.data.utils.Dataset`, exposing transformations and utilities to work with your data.
-In our example, we directly used `ImageDataset` from `torchvision` but we included a skeleton for a custom `Dataset` in `/data/MyDataset`
-### Transformation
-You usually have to do some preprocessing on the data, e.g. resize the images and apply data augmentation. All your transformation should go inside `.data.trasformation`. In our template, we included a wrapper for
-[imgaug](https://imgaug.readthedocs.io/en/latest/)
-![alt](https://raw.githubusercontent.com/FrancescoSaverioZuppichini/PyTorch-Deep-Learning-Skeletron/master/images/transformation.png)
-### Dataloaders
-As you know, you have to create a `Dataloader` to feed your data into the model. In the `data.__init__.py` file we expose a very simple function `get_dataloaders` to automatically configure the *train, val and test* data loaders using few parameters
-![alt](https://raw.githubusercontent.com/FrancescoSaverioZuppichini/PyTorch-Deep-Learning-Skeletron/master/images/data.png)
-## Losses
-Sometimes you may need to define your custom losses, you can include them in the `./losses` package. For example
-![alt](https://raw.githubusercontent.com/FrancescoSaverioZuppichini/PyTorch-Deep-Learning-Skeletron/master/images/losses.png)
-## Metrics
-Sometimes you may need to define your custom metrics. For example
-![alt](https://raw.githubusercontent.com/FrancescoSaverioZuppichini/PyTorch-Deep-Learning-Skeletron/master/images/metrics.png)
-## Logging 
-We included python [logging](https://docs.python.org/3/library/logging.html) module. You can import and use it by:
-
-```python
-from logger import logging
-logging.info('print() is for noobs')
+```{r setup, include=FALSE}
+library(tufte)
+# invalidate cache when the tufte version changes
+knitr::opts_chunk$set(tidy = FALSE, cache.extra = packageVersion('tufte'))
+options(htmltools.dir.version = FALSE)
 ```
 
-## Models
-All your models go inside `models`, in our case, we have a very basic cnn and we override the `resnet18` function to provide a frozen model to finetune.
+# Introduction
 
-![alt](https://github.com/FrancescoSaverioZuppichini/PyTorch-Deep-Learning-Skeletron/blob/master/images/resnet.png?raw=true)
-## Train/Evaluation
-In our case we kept things simple, all the training and evaluation logic is inside `.main.py` where we used [poutyne](https://pypi.org/project/Poutyne/) as the main library. We already defined a useful list of callbacks:
-- learning rate scheduler
-- auto-save of the best model
-- early stopping
-Usually, this is all you need!
-![alt](https://github.com/FrancescoSaverioZuppichini/PyTorch-Deep-Learning-Skeletron/blob/master/images/main.png?raw=true)
-### Callbacks 
-You may need to create custom callbacks, with [poutyne](https://pypi.org/project/Poutyne/) is very easy since it support Keras-like API. You custom callbacks should go inside `./callbacks`. For example, we have created one to update Comet every epoch.
-![alt](https://github.com/FrancescoSaverioZuppichini/PyTorch-Deep-Learning-Skeletron/blob/master/images/CometCallback.png?raw=true)
+The Tufte handout style is a style that Edward Tufte uses in his books and handouts. Tufte's style is known for its extensive use of sidenotes, tight integration of graphics with text, and well-set typography. This style has been implemented in LaTeX and HTML/CSS^[See Github repositories [tufte-latex](https://github.com/tufte-latex/tufte-latex) and [tufte-css](https://github.com/edwardtufte/tufte-css)], respectively. We have ported both implementations into the [**tufte** package](https://github.com/rstudio/tufte). If you want LaTeX/PDF output, you may use the `tufte_handout` format for handouts, and `tufte_book` for books. For HTML output, use `tufte_html`. These formats can be either specified in the YAML metadata at the beginning of an R Markdown document (see an example below), or passed to the `rmarkdown::render()` function. See @R-rmarkdown for more information about **rmarkdown**.
 
-### Track your experiment
-We are using [comet](https://www.comet.ml/) to automatically track our models' results. This is what comet's board looks like after a few models run.
-![alt](https://github.com/FrancescoSaverioZuppichini/PyTorch-Deep-Learning-Skeletron/blob/master/images/comet.jpg?raw=true)
-Running `main.py` produces the following output:
-![alt](https://github.com/FrancescoSaverioZuppichini/PyTorch-Deep-Learning-Skeletron/blob/master/images/output.jpg?raw=true)
-## Utils
-We also created different utilities function to plot both dataset and dataloader. They are in `utils.py`. For example, calling `show_dl` on our train and val dataset produces the following outputs.
-![alt](https://github.com/FrancescoSaverioZuppichini/PyTorch-Deep-Learning-Skeletron/blob/master/images/Figure_1.png?raw=true)
-![alt](https://github.com/FrancescoSaverioZuppichini/PyTorch-Deep-Learning-Skeletron/blob/master/images/Figure_2.png?raw=true)
-As you can see data-augmentation is correctly applied on the train set
-## Conclusions
-I hope you found some useful information and hopefully it this template will help you on your next amazing project :)
+```yaml
+---
+title: "An Example Using the Tufte Style"
+author: "John Smith"
+output:
+  tufte::tufte_handout: default
+  tufte::tufte_html: default
+---
+```
 
-Let me know if you have some ideas/suggestions to improve it.
+There are two goals of this package:
 
-Thank you for reading
+1. To produce both PDF and HTML output with similar styles from the same R Markdown document;
+1. To provide simple syntax to write elements of the Tufte style such as side notes and margin figures, e.g. when you want a margin figure, all you need to do is the chunk option `fig.margin = TRUE`, and we will take care of the details for you, so you never need to think about `\begin{marginfigure} \end{marginfigure}` or `<span class="marginfigure"> </span>`; the LaTeX and HTML code under the hood may be complicated, but you never need to learn or write such code.
 
-## TODO 
-- [ ] one example for [lightning](https://github.com/williamFalcon/pytorch-lightning)
-- [ ] one example with [fastai](https://www.fast.ai/)
-- [ ] show how to setup anaconda 
+If you have any feature requests or find bugs in **tufte**, please do not hesitate to file them to https://github.com/rstudio/tufte/issues. For general questions, you may ask them on StackOverflow: http://stackoverflow.com/tags/rmarkdown.
+
+# Headings
+
+This style provides first and second-level headings (that is, `#` and `##`), demonstrated in the next section. You may get unexpected output if you try to use `###` and smaller headings.
+
+`r newthought('In his later books')`^[[Beautiful Evidence](http://www.edwardtufte.com/tufte/books_be)], Tufte starts each section with a bit of vertical space, a non-indented paragraph, and sets the first few words of the sentence in small caps. To accomplish this using this style, call the `newthought()` function in **tufte** in an _inline R expression_ `` `r ` `` as demonstrated at the beginning of this paragraph.^[Note you should not assume **tufte** has been attached to your R session. You should either `library(tufte)` in your R Markdown document before you call `newthought()`, or use `tufte::newthought()`.]
+
+# Figures
+
+## Margin Figures
+
+Images and graphics play an integral role in Tufte's work. To place figures in the margin you can use the **knitr** chunk option `fig.margin = TRUE`. For example:
+
+```{r fig-margin, fig.margin = TRUE, fig.cap = "MPG vs horsepower, colored by transmission.", fig.width=3.5, fig.height=3.5, cache=TRUE, message=FALSE}
+library(ggplot2)
+mtcars2 <- mtcars
+mtcars2$am <- factor(
+  mtcars$am, labels = c('automatic', 'manual')
+)
+ggplot(mtcars2, aes(hp, mpg, color = am)) +
+  geom_point() + geom_smooth() +
+  theme(legend.position = 'bottom')
+```
+
+Note the use of the `fig.cap` chunk option to provide a figure caption. You can adjust the proportions of figures using the `fig.width` and `fig.height` chunk options. These are specified in inches, and will be automatically scaled down to fit within the handout margin.
+
+## Arbitrary Margin Content
+
+In fact, you can include anything in the margin using the **knitr** engine named `marginfigure`. Unlike R code chunks ```` ```{r} ````, you write a chunk starting with ```` ```{marginfigure} ```` instead, then put the content in the chunk. See an example on the right about the first fundamental theorem of calculus.
+
+```{marginfigure}
+We know from _the first fundamental theorem of calculus_ that for $x$ in $[a, b]$:
+$$\frac{d}{dx}\left( \int_{a}^{x} f(u)\,du\right)=f(x).$$
+```
+
+For the sake of portability between LaTeX and HTML, you should keep the margin content as simple as possible (syntax-wise) in the `marginefigure` blocks. You may use simple Markdown syntax like `**bold**` and `_italic_` text, but please refrain from using footnotes, citations, or block-level elements (e.g. blockquotes and lists) there.
+
+Note: if you set `echo = FALSE` in your global chunk options, you will have to add `echo = TRUE` to the chunk to display a margin figure, for example ```` ```{marginfigure, echo = TRUE} ````.
+
+## Full Width Figures
+
+You can arrange for figures to span across the entire page by using the chunk option `fig.fullwidth = TRUE`.
+
+```{r fig-fullwidth, fig.width = 10, fig.height = 2, fig.fullwidth = TRUE, fig.cap = "A full width figure.", warning=FALSE, message=FALSE, cache=TRUE}
+ggplot(diamonds, aes(carat, price)) + geom_smooth() +
+  facet_grid(~ cut)
+```
+
+ Other chunk options related to figures can still be used, such as `fig.width`, `fig.cap`, `out.width`, and so on. For full width figures, usually `fig.width` is large and `fig.height` is small. In the above example, the plot size is $10 \times 2$.
+
+## Main Column Figures
+
+Besides margin and full width figures, you can of course also include figures constrained to the main column. This is the default type of figures in the LaTeX/HTML output.
+
+```{r fig-main, fig.cap = "A figure in the main column.", cache=TRUE}
+ggplot(diamonds, aes(cut, price)) + geom_boxplot()
+```
+
+# Sidenotes
+
+One of the most prominent and distinctive features of this style is the extensive use of sidenotes. There is a wide margin to provide ample room for sidenotes and small figures. Any use of a footnote will automatically be converted to a sidenote. ^[This is a sidenote that was entered using a footnote.] 
+
+If you'd like to place ancillary information in the margin without the sidenote mark (the superscript number), you can use the `margin_note()` function from **tufte** in an inline R expression. `r margin_note("This is a margin note.  Notice that there is no number preceding the note.")` This function does not process the text with Pandoc, so Markdown syntax will not work here. If you need to write anything in Markdown syntax, please use the `marginfigure` block described previously.
+
+# References
+
+References can be displayed as margin notes for HTML output. For example, we can cite R here [@R-base]. To enable this feature, you must set `link-citations: yes` in the YAML metadata, and the version of `pandoc-citeproc` should be at least 0.7.2. You can always install your own version of Pandoc from http://pandoc.org/installing.html if the version is not sufficient. To check the version of `pandoc-citeproc` in your system, you may run this in R:
+
+```{r eval=FALSE}
+system2('pandoc-citeproc', '--version')
+```
+
+If your version of `pandoc-citeproc` is too low, or you did not set `link-citations: yes` in YAML, references in the HTML output will be placed at the end of the output document.
+
+# Tables
+
+You can use the `kable()` function from the **knitr** package to format tables that integrate well with the rest of the Tufte handout style. The table captions are placed in the margin like figures in the HTML output.
+
+```{r}
+knitr::kable(
+  mtcars[1:6, 1:6], caption = 'A subset of mtcars.'
+)
+```
+
+# Block Quotes
+
+We know from the Markdown syntax that paragraphs that start with `>` are converted to block quotes. If you want to add a right-aligned footer for the quote, you may use the function `quote_footer()` from **tufte** in an inline R expression. Here is an example:
+
+> "If it weren't for my lawyer, I'd still be in prison. It went a lot faster with two people digging."
+>
+> `r tufte::quote_footer('--- Joe Martin')`
+Without using `quote_footer()`, it looks like this (the second line is just a normal paragraph):
+
+> "Great people talk about ideas, average people talk about things, and small people talk about wine."
+>
+> --- Fran Lebowitz
+# Responsiveness
+
+The HTML page is responsive in the sense that when the page width is smaller than 760px, sidenotes and margin notes will be hidden by default. For sidenotes, you can click their numbers (the superscripts) to toggle their visibility. For margin notes, you may click the circled plus signs to toggle visibility.
+
+# More Examples
+
+The rest of this document consists of a few test cases to make sure everything still works well in slightly more complicated scenarios. First we generate two plots in one figure environment with the chunk option `fig.show = 'hold'`:
+
+```{r fig-two-together, fig.cap="Two plots in one figure environment.", fig.show='hold', cache=TRUE, message=FALSE}
+p <- ggplot(mtcars2, aes(hp, mpg, color = am)) +
+  geom_point()
+p
+p + geom_smooth()
+```
+
+Then two plots in separate figure environments (the code is identical to the previous code chunk, but the chunk option is the default `fig.show = 'asis'` now):
+
+```{r fig-two-separate, ref.label='fig-two-together', fig.cap=sprintf("Two plots in separate figure environments (the %s plot).", c("first", "second")), cache=TRUE, message=FALSE}
+```
+
+You may have noticed that the two figures have different captions, and that is because we used a character vector of length 2 for the chunk option `fig.cap` (something like `fig.cap = c('first plot', 'second plot')`).
+
+Next we show multiple plots in margin figures. Similarly, two plots in the same figure environment in the margin:
+
+```{r fig-margin-together, fig.margin=TRUE, fig.show='hold', fig.cap="Two plots in one figure environment in the margin.", fig.width=3.5, fig.height=2.5, cache=TRUE}
+p
+p + geom_smooth(method = 'lm')
+```
+
+Then two plots from the same code chunk placed in different figure environments:
+
+```{r fig-margin-separate, fig.margin=TRUE, fig.cap=sprintf("Two plots in separate figure environments in the margin (the %s plot).", c("first", "second")), fig.width=3.5, fig.height=2.5, cache=TRUE}
+knitr::kable(head(iris, 15))
+p
+knitr::kable(head(iris, 12))
+p + geom_smooth(method = 'lm')
+knitr::kable(head(iris, 5))
+```
+
+We blended some tables in the above code chunk only as _placeholders_ to make sure there is enough vertical space among the margin figures, otherwise they will be stacked tightly together. For a practical document, you should not insert too many margin figures consecutively and make the margin crowded. 
+
+You do not have to assign captions to figures. We show three figures with no captions below in the margin, in the main column, and in full width, respectively.
+
+```{r fig-nocap-margin, fig.margin=TRUE, fig.width=3.5, fig.height=2, cache=TRUE}
+# a boxplot of weight vs transmission; this figure
+# will be placed in the margin
+ggplot(mtcars2, aes(am, wt)) + geom_boxplot() +
+  coord_flip()
+```
+```{r fig-nocap-main, cache=TRUE}
+# a figure in the main column
+p <- ggplot(mtcars, aes(wt, hp)) + geom_point()
+p
+```
+```{r fig-nocap-fullwidth, fig.fullwidth=TRUE, fig.width=10, fig.height=3, cache=TRUE}
+# a fullwidth figure
+p + geom_smooth(method = 'lm') + facet_grid(~ gear)
+```
+
+# Some Notes on Tufte CSS
+
+There are a few other things in Tufte CSS that we have not mentioned so far. If you prefer `r sans_serif('sans-serif fonts')`, use the function `sans_serif()` in **tufte**. For epigraphs, you may use a pair of underscores to make the paragraph italic in a block quote, e.g.
+
+> _I can win an argument on any topic, against any opponent. People know this, and steer clear of me at parties. Often, as a sign of their great respect, they don't even invite me._
+>
+> `r quote_footer('--- Dave Barry')`
+We hope you will enjoy the simplicity of R Markdown and this R package, and we sincerely thank the authors of the Tufte-CSS and Tufte-LaTeX projects for developing the beautiful CSS and LaTeX classes. Our **tufte** package would not have been possible without their heavy lifting.
+
+You can turn on/off some features of the Tufte style in HTML output. The default features enabled are:
+
+```yaml
+output:
+  tufte::tufte_html:
+    tufte_features: ["fonts", "background", "italics"]
+```
+
+If you do not want the page background to be lightyellow, you can remove `background` from `tufte_features`. You can also customize the style of the HTML page via a CSS file. For example, if you do not want the subtitle to be italic, you can define
+
+```css
+h3.subtitle em {
+  font-style: normal;
+}
+```
+
+in, say, a CSS file `my_style.css` (under the same directory of your Rmd document), and apply it to your HTML output via the `css` option, e.g.,
+
+```yaml
+output:
+  tufte::tufte_html:
+    tufte_features: ["fonts", "background"]
+    css: "my_style.css"
+```
+
+There is also a variant of the Tufte style in HTML/CSS named "[Envisoned CSS](http://nogginfuel.com/envisioned-css/)". This style can be used by specifying the argument `tufte_variant = 'envisioned'` in `tufte_html()`^[The actual Envisioned CSS was not used in the **tufte** package. We only changed the fonts, background color, and text color based on the default Tufte style.], e.g.
+
+```yaml
+output:
+  tufte::tufte_html:
+    tufte_variant: "envisioned"
+```
+
+To see the R Markdown source of this example document, you may follow [this link to Github](https://github.com/rstudio/tufte/raw/master/inst/rmarkdown/templates/tufte_html/skeleton/skeleton.Rmd), use the wizard in RStudio IDE (`File -> New File -> R Markdown -> From Template`), or open the Rmd file in the package:
+
+```{r eval=FALSE}
+file.edit(
+  tufte:::template_resources(
+    'tufte_html', '..', 'skeleton', 'skeleton.Rmd'
+  )
+)
+```
+
+This document is also available in [Chinese](http://rstudio.github.io/tufte/cn/), and its `envisioned` style can be found [here](http://rstudio.github.io/tufte/envisioned/).
+
+```{r bib, include=FALSE}
+# create a bib file for the R packages used in this document
+knitr::write_bib(c('base', 'rmarkdown'), file = 'skeleton.bib')
+```
